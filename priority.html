@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prioritize Your Tasks - Simple Task Management Demo</title>
+  <meta name="description" content="A playful interactive demo for prioritizing your daily tasks. Drag and drop to organize what matters most—no login required.">
+  <meta property="og:title" content="Prioritize Your Tasks - Simple Task Management">
+  <meta property="og:description" content="Interactive task prioritization demo. Drag, drop, and organize your day.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Prioritize Your Tasks">
+  <meta name="twitter:description" content="Interactive task prioritization demo. Drag, drop, organize.">
+  <style>
+    /* Reset and base styles */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: system-ui, Roboto, "Segoe UI", Arial, "Noto Sans", sans-serif;
+      background: #FAFAF7;
+      color: #202124;
+      line-height: 1.6;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Skip link for accessibility */
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #202124;
+      color: #fff;
+      padding: 8px 16px;
+      text-decoration: none;
+      z-index: 100;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+
+    /* Animated background shapes */
+    .bg-shape {
+      position: fixed;
+      border-radius: 50%;
+      opacity: 0.15;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .bg-shape-1 {
+      width: 300px;
+      height: 300px;
+      background: #AECBF7;
+      top: -100px;
+      right: -50px;
+      animation: float1 9s ease-in-out infinite;
+    }
+    .bg-shape-2 {
+      width: 200px;
+      height: 200px;
+      background: #F7B1AA;
+      bottom: 10%;
+      left: -50px;
+      animation: float2 9s ease-in-out infinite;
+    }
+    .bg-shape-3 {
+        width: 150px; height: 150px;
+        background: rgb(237, 214, 144); /* pastel yellow */
+        top: 18%; right: 8%;
+        animation: float3 9s ease-in-out infinite;
+    }
+    .bg-shape-4 {
+        width: 180px; height: 180px;
+        background: rgb(169, 212, 172); /* pastel green */
+        bottom: 20%;           /* was 'button' */
+        left: -50px;           /* was -50% (off-screen) */
+        animation: float1 9s ease-in-out infinite;
+    }
+
+    @keyframes float1 {
+      0% { transform: translate(0, 0) scale(1) rotate(0deg); }
+      25% { transform: translate(30px, -30px) scale(1.1) rotate(90deg); }
+      50% { transform: translate(60px, 0) scale(1) rotate(180deg); }
+      75% { transform: translate(30px, 30px) scale(0.95) rotate(270deg); }
+      100% { transform: translate(0, 0) scale(1) rotate(360deg); }
+    }
+    @keyframes float2 {
+      0% { transform: translate(0, 0) scale(1) rotate(0deg); }
+      25% { transform: translate(-40px, 40px) scale(0.9) rotate(-90deg); }
+      50% { transform: translate(-20px, -20px) scale(1.05) rotate(-180deg); }
+      75% { transform: translate(20px, 40px) scale(0.95) rotate(-270deg); }
+      100% { transform: translate(0, 0) scale(1) rotate(-360deg); }
+    }
+    @keyframes float3 {
+      0% { transform: translate(0, 0) scale(1) rotate(0deg); }
+      33% { transform: translate(20px, 30px) scale(1.05) rotate(120deg); }
+      66% { transform: translate(-25px, -15px) scale(0.9) rotate(240deg); }
+      100% { transform: translate(0, 0) scale(1) rotate(360deg); }
+    }
+
+    /* Layout */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Header */
+    header {
+      padding: 40px 0 20px;
+      text-align: center;
+    }
+    h1 {
+      font-size: clamp(2.8rem, 6vw, 3.5rem);
+      font-weight: 500;
+      color: #202124;
+      margin-bottom: 16px;
+    }
+    nav {
+      margin-top: 12px;
+    }
+    nav a {
+      color: #5f6368;
+      text-decoration: none;
+      margin: 0 16px;
+      font-size: 0.95rem;
+      transition: color 0.2s;
+    }
+    nav a:hover, nav a:focus {
+      color: #202124;
+      text-decoration: underline;
+    }
+
+    /* Main content */
+    main {
+      padding: 40px 0 60px;
+    }
+    .intro {
+      text-align: center;
+      margin-bottom: 40px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .intro p {
+      color: #5f6368;
+      font-size: 1.05rem;
+      margin-bottom: 12px;
+    }
+    .arabic-text {
+      font-family: 'Tajawal', 'Cairo', 'Amiri', 'Noto Sans Arabic', system-ui, sans-serif;
+      direction: rtl;
+      font-size: 1.15rem;
+      line-height: 1.8;
+    }
+    .how-it-works {
+      font-size: 0.9rem;
+      color: #80868b;
+      font-style: italic;
+    }
+
+    /* Panels layout */
+    .panels {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 32px;
+      margin-top: 40px;
+    }
+    @media (min-width: 768px) {
+      .panels {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .panel {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .panel h2 {
+      font-size: 1.25rem;
+      font-weight: 500;
+      margin-bottom: 16px;
+      color: #202124;
+    }
+
+    /* Task pool */
+    .task-pool {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-height: 500px;
+      overflow-y: auto;
+      padding: 4px;
+    }
+
+    /* Priority stack */
+    .priority-stack {
+      min-height: 300px;
+      padding: 16px;
+      border: 2px dashed #dadce0;
+      border-radius: 8px;
+      background: #f8f9fa;
+      position: relative;
+    }
+    .priority-stack.drag-over {
+      border-color: #AECBF7;
+      background: #f0f4ff;
+    }
+    .priority-stack.empty::after {
+      content: 'Drop tasks here in priority order (top = #1)';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #80868b;
+      font-size: 0.95rem;
+      text-align: center;
+      pointer-events: none;
+    }
+    .stack-items {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* Task cards */
+    .task-card {
+      background: #E7F6EA;
+      padding: 14px 16px;
+      border-radius: 8px;
+      cursor: grab;
+      user-select: none;
+      border: 2px solid transparent;
+      transition: transform 0.2s, box-shadow 0.2s;
+      color: #1a4d2e;
+      font-size: 0.95rem;
+    }
+    .task-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .task-card:focus {
+      outline: 3px solid #AECBF7;
+      outline-offset: 2px;
+    }
+    .task-card.dragging {
+      opacity: 0.5;
+      cursor: grabbing;
+    }
+    .task-card[data-location="stack"] {
+      position: relative;
+      padding-left: 48px;
+    }
+    .priority-number {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-weight: 600;
+      color: #5f6368;
+      font-size: 1.1rem;
+    }
+
+    /* Keyboard controls */
+    .keyboard-controls {
+      display: none;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .task-card:focus .keyboard-controls {
+      display: flex;
+    }
+    .keyboard-controls button {
+      padding: 4px 10px;
+      font-size: 0.8rem;
+      background: white;
+      border: 1px solid #dadce0;
+      border-radius: 4px;
+      cursor: pointer;
+      color: #5f6368;
+    }
+    .keyboard-controls button:hover {
+      background: #f8f9fa;
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 40px 20px;
+      color: #80868b;
+      font-size: 0.85rem;
+    }
+
+    /* Accessibility */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0,0,0,0);
+      white-space: nowrap;
+      border: 0;
+    }
+  </style>
+</head>
+<body>
+  <!-- Animated background shapes -->
+  <div class="bg-shape bg-shape-1" aria-hidden="true"></div>
+  <div class="bg-shape bg-shape-2" aria-hidden="true"></div>
+  <div class="bg-shape bg-shape-3" aria-hidden="true"></div>
+  <div class="bg-shape bg-shape-4" aria-hidden="true"></div>
+
+  <a href="#main-content" class="skip-link">Skip to content</a>
+
+  <div class="container">
+    <header>
+      <h1>Prioritize Your Tasks</h1>
+    </header>
+
+    <main id="main-content">
+      <section class="intro">
+        <p class="arabic-text">رتّب يومك بسحب المهام إلى قائمة أولوياتك. رتبها بذكاء وشاركنا اولوياتك ✨</p>
+        <p class="how-it-works arabic-text">اسحب البطاقات من اليسار إلى اليمين. رتّبها على كيفك. الأعلى = الأهم!</p>
+      </section>
+
+      <section class="panels">
+        <!-- Task Pool -->
+        <div class="panel">
+          <h2>Task Pool</h2>
+          <div class="task-pool" id="task-pool" role="list" aria-label="Available tasks">
+            <div class="task-card" draggable="true" tabindex="0" role="listitem" data-task-id="1" data-location="pool">
+              1. اسلم واجب/تقرير (الديدلاين نهاية اليوم)
+            </div>
+            <div class="task-card" draggable="true" tabindex="0" role="listitem" data-task-id="2" data-location="pool">
+              2. اقضي مشاوير اهلي
+            </div>
+            <div class="task-card" draggable="true" tabindex="0" role="listitem" data-task-id="3" data-location="pool">
+              3. اروح النادي
+            </div>
+            <div class="task-card" draggable="true" tabindex="0" role="listitem" data-task-id="4" data-location="pool">
+              4. ارتب لاجتماع النخبه اللي بعد اسبوعين
+            </div>
+            <div class="task-card" draggable="true" tabindex="0" role="listitem" data-task-id="5" data-location="pool">
+              5. ارد على الايميلات ورسائل الواتس المتراكمة
+            </div>
+            <div class="task-card" draggable="true" tabindex="0" role="listitem" data-task-id="6" data-location="pool">
+              6. اكل
+            </div>
+            <div class="task-card" draggable="true" tabindex="0" role="listitem" data-task-id="7" data-location="pool">
+              7. اقعد مع الاهل
+            </div>
+            <div class="task-card" draggable="true" tabindex="0" role="listitem" data-task-id="8" data-location="pool">
+              8. احضّر لاجتماع دوري للعمل
+            </div>
+            <div class="task-card" draggable="true" tabindex="0" role="listitem" data-task-id="9" data-location="pool">
+              9. اتعلم مهاره جديدة
+            </div>
+            <div class="task-card" draggable="true" tabindex="0" role="listitem" data-task-id="10" data-location="pool">
+              10. اتنفس لمدة عشر دقايق
+            </div>
+            <div class="task-card" draggable="true" tabindex="0" role="listitem" data-task-id="11" data-location="pool">
+              11. اجتمع مع زميل حايس الشغل اللي بنسلمه بعد خمس ايام
+            </div>
+            <div class="task-card" draggable="true" tabindex="0" role="listitem" data-task-id="12" data-location="pool">
+              12. Mental Breakdown
+            </div>
+            <div class="task-card" draggable="true" tabindex="0" role="listitem" data-task-id="13" data-location="pool">
+              13. اكتب مهام الاسبوع الجاي
+            </div>
+          </div>
+        </div>
+
+        <!-- Priority Stack -->
+        <div class="panel">
+          <h2>Priority Stack</h2>
+          <div class="priority-stack empty" id="priority-stack" role="list" aria-label="Priority stack" aria-live="polite">
+            <div class="stack-items" id="stack-items"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p>&copy; 2025 Prioritize Your Tasks. A simple demo—no data stored.</p>
+    </footer>
+  </div>
+
+  <script>
+    // Drag and drop state
+    let draggedElement = null;
+    let draggedFrom = null;
+
+    // Get DOM elements
+    const taskPool = document.getElementById('task-pool');
+    const priorityStack = document.getElementById('priority-stack');
+    const stackItems = document.getElementById('stack-items');
+
+    // Initialize drag events for all task cards
+    function initializeDragEvents() {
+      const cards = document.querySelectorAll('.task-card');
+      cards.forEach(card => {
+        // Mouse drag events
+        card.addEventListener('dragstart', handleDragStart);
+        card.addEventListener('dragend', handleDragEnd);
+        
+        // Keyboard events
+        card.addEventListener('keydown', handleKeyboard);
+      });
+    }
+
+    // Handle drag start
+    function handleDragStart(e) {
+      draggedElement = e.target;
+      draggedFrom = e.target.dataset.location;
+      e.target.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/html', e.target.innerHTML);
+    }
+
+    // Handle drag end
+    function handleDragEnd(e) {
+      e.target.classList.remove('dragging');
+      draggedElement = null;
+      draggedFrom = null;
+    }
+
+    // Handle drag over
+    function handleDragOver(e) {
+      if (e.preventDefault) {
+        e.preventDefault();
+      }
+      e.dataTransfer.dropEffect = 'move';
+      return false;
+    }
+
+    // Handle drag enter
+    function handleDragEnter(e) {
+      if (e.target.classList.contains('priority-stack') || 
+          e.target.classList.contains('stack-items')) {
+        priorityStack.classList.add('drag-over');
+      }
+    }
+
+    // Handle drag leave
+    function handleDragLeave(e) {
+      if (e.target.classList.contains('priority-stack')) {
+        priorityStack.classList.remove('drag-over');
+      }
+    }
+
+    // Handle drop
+    function handleDrop(e) {
+      if (e.stopPropagation) {
+        e.stopPropagation();
+      }
+      e.preventDefault();
+      
+      priorityStack.classList.remove('drag-over');
+      
+      if (!draggedElement) return;
+      
+      const dropTarget = e.target;
+      
+      // Dropping in priority stack
+      if (dropTarget.closest('.priority-stack')) {
+        // Move from pool to stack
+        if (draggedFrom === 'pool') {
+          draggedElement.dataset.location = 'stack';
+          stackItems.appendChild(draggedElement);
+        } 
+        // Reorder within stack
+        else if (draggedFrom === 'stack') {
+          const afterElement = getDragAfterElement(stackItems, e.clientY);
+          if (afterElement == null) {
+            stackItems.appendChild(draggedElement);
+          } else {
+            stackItems.insertBefore(draggedElement, afterElement);
+          }
+        }
+        updatePriorityNumbers();
+      }
+      
+      // Dropping back to pool
+      if (dropTarget.closest('#task-pool') && draggedFrom === 'stack') {
+        draggedElement.dataset.location = 'pool';
+        removePriorityNumber(draggedElement);
+        taskPool.appendChild(draggedElement);
+        updatePriorityNumbers();
+      }
+      
+      return false;
+    }
+
+    // Get element after drag position (for reordering)
+    function getDragAfterElement(container, y) {
+      const draggableElements = [...container.querySelectorAll('.task-card:not(.dragging)')];
+      
+      return draggableElements.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+        
+        if (offset < 0 && offset > closest.offset) {
+          return { offset: offset, element: child };
+        } else {
+          return closest;
+        }
+      }, { offset: Number.NEGATIVE_INFINITY }).element;
+    }
+
+    // Update priority numbers in stack
+    function updatePriorityNumbers() {
+      const stackCards = stackItems.querySelectorAll('.task-card');
+      
+      stackCards.forEach((card, index) => {
+        let numberSpan = card.querySelector('.priority-number');
+        if (!numberSpan) {
+          numberSpan = document.createElement('span');
+          numberSpan.className = 'priority-number';
+          card.insertBefore(numberSpan, card.firstChild);
+        }
+        numberSpan.textContent = `${index + 1}.`;
+      });
+      
+      // Update empty state
+      if (stackCards.length === 0) {
+        priorityStack.classList.add('empty');
+      } else {
+        priorityStack.classList.remove('empty');
+      }
+    }
+
+    // Remove priority number when moving back to pool
+    function removePriorityNumber(card) {
+      const numberSpan = card.querySelector('.priority-number');
+      if (numberSpan) {
+        numberSpan.remove();
+      }
+    }
+
+    // Keyboard support
+    function handleKeyboard(e) {
+      const card = e.target;
+      
+      // Enter or Space to move card
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        
+        if (card.dataset.location === 'pool') {
+          // Move to stack
+          card.dataset.location = 'stack';
+          stackItems.appendChild(card);
+          updatePriorityNumbers();
+          card.focus();
+        } else if (card.dataset.location === 'stack') {
+          // Move back to pool
+          card.dataset.location = 'pool';
+          removePriorityNumber(card);
+          taskPool.appendChild(card);
+          updatePriorityNumbers();
+          card.focus();
+        }
+      }
+      
+      // Arrow keys to reorder in stack
+      if (card.dataset.location === 'stack') {
+        if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          const prev = card.previousElementSibling;
+          if (prev) {
+            stackItems.insertBefore(card, prev);
+            updatePriorityNumbers();
+            card.focus();
+          }
+        } else if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          const next = card.nextElementSibling;
+          if (next) {
+            stackItems.insertBefore(next, card);
+            updatePriorityNumbers();
+            card.focus();
+          }
+        }
+      }
+    }
+
+    // Set up drop zones
+    priorityStack.addEventListener('dragover', handleDragOver);
+    priorityStack.addEventListener('dragenter', handleDragEnter);
+    priorityStack.addEventListener('dragleave', handleDragLeave);
+    priorityStack.addEventListener('drop', handleDrop);
+    
+    taskPool.addEventListener('dragover', handleDragOver);
+    taskPool.addEventListener('drop', handleDrop);
+
+    // Initialize all drag events
+    initializeDragEvents();
+  </script>
+</body>
+</html>
